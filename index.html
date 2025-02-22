@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Parking Tracker</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2196F3;
+            --dark: #1A237E;
+            --light: #E3F2FD;
+            --success: #4CAF50;
+            --warning: #FFC107;
+            --danger: #F44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--dark), var(--primary));
+            padding: 1rem;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar h1 {
+            display: inline;
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            float: right;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--light);
+            transform: translateY(-2px);
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .parking-status {
+            grid-column: 1 / -1;
+        }
+
+        .status-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+
+        .status-box:hover::before {
+            transform: translateX(0);
+        }
+
+        .available {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+        }
+
+        .filling {
+            background: linear-gradient(45deg, #f1c40f, #f39c12);
+        }
+
+        .full {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4CAF50;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .notification-panel {
+            position: relative;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: var(--dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            width: 75%;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 5px;
+            animation: fillProgress 2s ease-out;
+        }
+
+        @keyframes fillProgress {
+            from { width: 0; }
+            to { width: 75%; }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1><i class="fas fa-parking"></i> City Parking Tracker</h1>
+        <div class="nav-links">
+            <a href="#"><i class="fas fa-home"></i> Home</a>
+            <a href="#"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="#"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="card parking-status">
+            <h2><span class="live-indicator"></span> Live Parking Status</h2>
+            <div class="status-container">
+                <div class="status-box available">
+                    <i class="fas fa-car fa-2x"></i>
+                    <h3>Available</h3>
+                    <p>75% Free</p>
+                </div>
+                <div class="status-box filling">
+                    <i class="fas fa-clock fa-2x"></i>
+                    <h3>Peak Time</h3>
+                    <p>2 Hours Left</p>
+                </div>
+                <div class="status-box full">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    <h3>Alert</h3>
+                    <p>Filling Fast</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card notification-panel">
+            <div class="notification-badge">3</div>
+            <h2><i class="fas fa-bell"></i> Updates</h2>
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+            <p><i class="fas fa-clock"></i> Recommended departure: 8:30 AM</p>
+            <p><i class="fas fa-car"></i> Current availability: 75%</p>
+            <p><i class="fas fa-hourglass-half"></i> Time until full: 45 min</p>
+            <button><i class="fas fa-cog"></i> Configure</button>
+        </div>
+
+        <div class="card preferences-panel">
+            <h2><i class="fas fa-sliders-h"></i> Preferences</h2>
+            <form>
+                <p><i class="fas fa-map-marker-alt"></i> Primary Location:</p>
+                <select style="margin: 10px 0; padding: 10px; width: 100%; border-radius: 5px;">
+                    <option>Downtown Parking Zone</option>
+                    <option>North Side Parking</option>
+                    <option>West End Garage</option>
+                </select>
+                <p><i class="fas fa-bell"></i> Notifications:</p>
+                <label>
+                    <input type="checkbox" checked> Email Alerts
+                </label><br>
+                <label>
+                    <input type="checkbox" checked> Push Notifications
+                </label><br>
+                <button style="margin-top: 15px;"><i class="fas fa-save"></i> Save</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
